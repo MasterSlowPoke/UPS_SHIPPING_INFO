@@ -1,22 +1,25 @@
 require 'selenium-webdriver'
-
+require 'date'
 
 class UpsInfo
 
-  def initialize(username, password, tracking_number)
+  def initialize(username, password, carrier)
     @@br = Selenium::WebDriver.for :chrome
     @@br.get 'https://www.ups.com/one-to-one/login?loc=en_US&returnto=https%3A%2F%2Fwwwapps.ups.com%2FWebTracking%2FreturnToDetails%3Floc%3Den_US&mcp=true'
     
     @@br.find_element(:id, 'repl_id1').send_key(username)
     @@br.find_element(:id, 'repl_id4').send_key(password)
     @@br.find_element(:id, 'submitBtn').click()
-    @@br.find_element(:id, 'trackNums').send_key(tracking_number)
-    @@br.find_element(:name, 'track.x').click()
+    @@carrier = carrier
     
   end
   
   
-  def get_info()
+  def get_info(tracking_number)
+    
+    @@br.find_element(:id, 'trackNums').send_key(tracking_number)
+    @@br.find_element(:name, 'track.x').click()
+    
     wait = Selenium::WebDriver::Wait.new(:timeout => 10) 
 
     xpaths = ['//*[@id="fontControl"]/fieldset/div[3]/fieldset/div/fieldset/div/fieldset/div[1]/div[1]/fieldset/div/fieldset/div/dl[1]',
@@ -37,13 +40,37 @@ class UpsInfo
     
     hash_info = {}
     
-    hash_info[:date_delivered]    = basic_information[0].text.partition(":\n").last.partition(' at ').first
-    hash_info[:time_delivered]    = basic_information[0].text.partition(":\n").last.partition(' at ').last
+    
+    date = basic_information[0].text.partition(":\n").last.split(' ')[1]
+    
+    if basic_information[0].text.partition(":\n").last.split(' ')[4] == 'A.M.'
+      time = basic_information[0].text.partition(":\n").last.split(' ')[3]
+    else
+      time =  (basic_information[0].text.partition(":\n").last.split(' ')[3].split(':')[0].to_i + 12).to_s + 
+               basic_information[0].text.partition(":\n").last.split(' ')[3].split(':')[1]
+    end
+    
+    year  = date.split('/')[2].to_i
+    month = date.split('/')[0].to_i
+    day   = date.split('/')[1].to_i
+    hour  = time.split(':')[0].to_i
+    minute= time.split(':')[1].to_i
+    
+    delivery_date_time = DateTime.new(year, month, day, hour, minute)
+    
+    year = basic_information[5].text.split('/')[2].to_i
+    month= basic_information[5].text.split('/')[0].to_i
+    day  = basic_information[5].text.split('/')[1].to_i
+    
+    bill_date = DateTime.new(year, month, day)
+    
+    hash_info[:carrier]           = @@carrier
+    hash_info[:date_time_deliv]   = delivery_date_time                                               #DateTime object
     hash_info[:left_at]           = basic_information[1].text.partition(":\n").last
     hash_info[:signed_by]         = basic_information[2].text.partition(":\n").last
     hash_info[:address]           = basic_information[3].text.partition(":\n").last
-    hash_info[:multiple_packages] = basic_information[4].text
-    hash_info[:billed_on]         = basic_information[5].text
+    hash_info[:multiple_packages] = basic_information[4].text.to_i
+    hash_info[:billed_on]         = bill_date
     hash_info[:type]              = basic_information[6].text
     hash_info[:weight]            = basic_information[7].text
     
@@ -70,9 +97,9 @@ end
 # password = 'Pinchme123'
 # tracking = '1Z5560TT0393090598'
 #
-# test = UpsInfo.new(username, password, tracking)
-# info = test.get_info()
+# test = UpsInfo.new(username, password, 'UPS')
+# info = test.get_info(tracking)
 #
-# puts info
+# puts info[:carrier]
 #
 # test.quit_browser()
