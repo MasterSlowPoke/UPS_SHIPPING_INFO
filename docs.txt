@@ -1,0 +1,27 @@
+Class Name         => UpsInfo
+
+Constructor Params => .new(username, password, carrier)
+                           *params
+                               -username: username provided by client
+                               -password: password provided by client
+                               -carrier : shipping company (UPS or FEDEX)
+                           
+
+Methods            => get_info(tracking_number)
+                           *params
+                               -tracking_number: tracking number for specific shipment
+                               
+                           *returns
+                               >>hash_info{
+                               
+                                   carrier:           #carrier name                 (String)
+                                   left_at:           #exact place of drop          (String)
+                                   signed_by:         #person that signed           (String)
+                                   address:           #address of drop              (String)
+                                   type:              #form of item                 (String)
+                                   weight:            #weight of item               (String)
+                                   multiple_packages: #number of packages           (int)
+                                   billed_on          #date of billing              (DateTime)
+                                   date_time_deliv:   #date and time of delivery    (DateTime)
+                                   
+                                 }
