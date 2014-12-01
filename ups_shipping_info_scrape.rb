@@ -12,8 +12,7 @@ class UpsInfo
     @br.find_element(:id, 'submitBtn').click()
     @carrier = carrier
   end
-  
-  
+
   def get_info(tracking_number)
     @br.find_element(:id, 'trackNums').send_key(tracking_number)
     @br.find_element(:name, 'track.x').click()
@@ -83,12 +82,10 @@ class UpsInfo
     
     return hash_info
   end
-  
-  
+    
   def quit_browser()
     @br.quit
   end
-  
 end
 
 # username = 'pinchpro'
