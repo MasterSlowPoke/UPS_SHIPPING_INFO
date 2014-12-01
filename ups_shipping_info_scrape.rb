@@ -2,6 +2,7 @@ require 'selenium-webdriver'
 require 'date'
 
 class UpsInfo
+require 'securerandom'
 
   def initialize(username, password, carrier)
     @br = Selenium::WebDriver.for :chrome
