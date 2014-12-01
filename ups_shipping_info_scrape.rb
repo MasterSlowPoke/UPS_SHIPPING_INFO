@@ -4,21 +4,19 @@ require 'date'
 class UpsInfo
 
   def initialize(username, password, carrier)
-    @@br = Selenium::WebDriver.for :chrome
-    @@br.get 'https://www.ups.com/one-to-one/login?loc=en_US&returnto=https%3A%2F%2Fwwwapps.ups.com%2FWebTracking%2FreturnToDetails%3Floc%3Den_US&mcp=true'
+    @br = Selenium::WebDriver.for :chrome
+    @br.get 'https://www.ups.com/one-to-one/login?loc=en_US&returnto=https%3A%2F%2Fwwwapps.ups.com%2FWebTracking%2FreturnToDetails%3Floc%3Den_US&mcp=true'
     
-    @@br.find_element(:id, 'repl_id1').send_key(username)
-    @@br.find_element(:id, 'repl_id4').send_key(password)
-    @@br.find_element(:id, 'submitBtn').click()
-    @@carrier = carrier
-    
+    @br.find_element(:id, 'repl_id1').send_key(username)
+    @br.find_element(:id, 'repl_id4').send_key(password)
+    @br.find_element(:id, 'submitBtn').click()
+    @carrier = carrier
   end
   
   
   def get_info(tracking_number)
-    
-    @@br.find_element(:id, 'trackNums').send_key(tracking_number)
-    @@br.find_element(:name, 'track.x').click()
+    @br.find_element(:id, 'trackNums').send_key(tracking_number)
+    @br.find_element(:name, 'track.x').click()
     
     wait = Selenium::WebDriver::Wait.new(:timeout => 10) 
 
@@ -31,11 +29,11 @@ class UpsInfo
               '//*[@id="fontControl"]/fieldset/div[3]/fieldset/div/fieldset/div/fieldset/div[1]/div[3]/fieldset/div[2]/dl/dd[3]',
               '//*[@id="fontControl"]/fieldset/div[3]/fieldset/div/fieldset/div/fieldset/div[1]/div[3]/fieldset/div[2]/dl/dd[4]']
     
-    wait.until {@@br.find_element(:xpath, xpaths[7])}
+    wait.until {@br.find_element(:xpath, xpaths[7])}
     
     basic_information = []
     xpaths.each do |path|
-      basic_information << @@br.find_element(:xpath, path)
+      basic_information << @br.find_element(:xpath, path)
     end
     
     hash_info = {}
@@ -64,7 +62,7 @@ class UpsInfo
     
     bill_date = DateTime.new(year, month, day)
     
-    hash_info[:carrier]           = @@carrier
+    hash_info[:carrier]           = @carrier
     hash_info[:date_time_deliv]   = delivery_date_time                                               #DateTime object
     hash_info[:left_at]           = basic_information[1].text.partition(":\n").last
     hash_info[:signed_by]         = basic_information[2].text.partition(":\n").last
@@ -77,18 +75,18 @@ class UpsInfo
     pic_name = hash_info[:signed_by]
     hash_info[:signature_pic]     = 'signatures/' + pic_name + '.png'
     
-    image = @@br.find_element(:xpath, '//*[@id="fontControl"]/fieldset/div[3]/fieldset/div/fieldset/div/fieldset/div[1]/div[1]/fieldset/div/fieldset/div/img')
+    image = @br.find_element(:xpath, '//*[@id="fontControl"]/fieldset/div[3]/fieldset/div/fieldset/div/fieldset/div[1]/div[1]/fieldset/div/fieldset/div/img')
     link = image.attribute("src")
-    @@br.get(link)
+    @br.get(link)
     
-    pic = @@br.save_screenshot('signatures/' + pic_name + '.png')
+    @br.save_screenshot(hash_info[:signature_pic])
     
     return hash_info
   end
   
   
   def quit_browser()
-    @@br.quit
+    @br.quit
   end
   
 end
