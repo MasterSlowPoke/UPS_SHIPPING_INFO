@@ -72,7 +72,7 @@ class UpsInfo
     hash_info[:weight]            = basic_information[7].text
     
     pic_name = hash_info[:signed_by]
-    hash_info[:signature_pic]     = 'signatures/' + pic_name + '.png'
+    hash_info[:signature_pic]     = "signatures/#{pic_name}-#{SecureRandom.uuid}.png"
     
     image = @br.find_element(:xpath, '//*[@id="fontControl"]/fieldset/div[3]/fieldset/div/fieldset/div/fieldset/div[1]/div[1]/fieldset/div/fieldset/div/img')
     link = image.attribute("src")
