@@ -79,7 +79,13 @@ require 'securerandom'
     link = image.attribute("src")
     @br.get(link)
     
-    @br.save_screenshot(hash_info[:signature_pic])
+    begin
+      File.new(hash_info[:signature_pic], "w")
+      @br.save_screenshot(hash_info[:signature_pic])
+    rescue Exception => e
+      puts Dir.pwd
+      puts e.message
+    end
     
     return hash_info
   end
