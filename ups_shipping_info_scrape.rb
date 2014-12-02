@@ -3,8 +3,11 @@ require 'mechanize'
 class ProofOfDelivery
   attr_reader :result
 
-  def initialize(username, password, tracking_number, shipper)
+  def initialize(shipment_charge)
     mech = Mechanize.new
+    account = UpsAccountNumber.where("number LIKE '%#{@charge.account_number}'").first.ups_account
+    username = account.username; password = account.pass; tracking = params[:tracking]
+
     page = log_into_ups_tracking_page(mech, username, password, tracking_number)
 
     #retrieve information from UPS Page
@@ -42,7 +45,6 @@ class ProofOfDelivery
 
   def ups_encoded_image(mech, parsed_page)
     img_tag = parsed_page.xpath('//*[@id="fontControl"]/fieldset/div[3]/fieldset/div/fieldset/div/fieldset/div[1]/div[1]/fieldset/div/fieldset/div/img')
-    p "\n****\n#{img_tag.class}\n***\n"
     return nil if img_tag.count == 0 || img_tag.attr('src').nil?
     img_file = mech.get img_tag.attr('src').value
     "data:image/png;base64,#{Base64.encode64 img_file.body}"
