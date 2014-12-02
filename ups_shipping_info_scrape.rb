@@ -5,10 +5,8 @@ class ProofOfDelivery
 
   def initialize(shipment_charge)
     mech = Mechanize.new
-    account = UpsAccountNumber.where("number LIKE '%#{@charge.account_number}'").first.ups_account
-    username = account.username; password = account.pass; tracking = params[:tracking]
-
-    page = log_into_ups_tracking_page(mech, username, password, tracking_number)
+    account = UpsAccountNumber.where("number LIKE '%#{shipment_charge.account_number}'").first.ups_account
+    page = log_into_ups_tracking_page(mech, account.username, account.pass, shipment_charge)
 
     #retrieve information from UPS Page
     parsed_page = Nokogiri::HTML page.body
@@ -51,7 +49,7 @@ class ProofOfDelivery
   end
 
   def sanitize_scraped_text(data)
-    data.nil? ? "" : data.text.strip
+    data.nil? ? nil : data.text.strip
   end
 
   UPS_XPATHS = ['//*[@id="fontControl"]/fieldset/div[3]/fieldset/div/fieldset/div/fieldset/div[1]/div[1]/fieldset/div/fieldset/div/dl[1]',
